@@ -383,6 +383,10 @@ socklen_t get_peername_uncached(h2o_socket_t *_sock, struct sockaddr *sa)
 static struct st_h2o_evloop_socket_t *create_socket(h2o_evloop_t *loop, int fd, int flags)
 {
     struct st_h2o_evloop_socket_t *sock;
+    
+    int on = 1;
+    fprintf(stderr, "enable tcp keep alive");
+    setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, &on, sizeof(on));
 
     sock = h2o_mem_alloc(sizeof(*sock));
     memset(sock, 0, sizeof(*sock));
