@@ -350,6 +350,8 @@ static void dispose_socket(h2o_socket_t *sock, const char *err)
 
 static void shutdown_ssl(h2o_socket_t *sock, const char *err)
 {
+    fprintf(stderr, "shutdown_ssl")
+    
     int ret;
 
     if (err != NULL)
@@ -446,6 +448,8 @@ h2o_socket_t *h2o_socket_import(h2o_loop_t *loop, h2o_socket_export_t *info)
 
 void h2o_socket_close(h2o_socket_t *sock)
 {
+    fprintf(stderr, "h2o_socket_close")
+    
     if (sock->ssl == NULL) {
         dispose_socket(sock, 0);
     } else {
@@ -619,6 +623,8 @@ size_t h2o_socket_do_prepare_for_latency_optimized_write(h2o_socket_t *sock,
 
 void h2o_socket_write(h2o_socket_t *sock, h2o_iovec_t *bufs, size_t bufcnt, h2o_socket_cb cb)
 {
+    fprintf(stderr, "h2o_socket_write")
+    
     size_t i, prev_bytes_written = sock->bytes_written;
 
     assert(bufcnt > 0);
@@ -994,6 +1000,8 @@ static int on_async_resumption_new(SSL *ssl, SSL_SESSION *session)
 
 static void on_handshake_complete(h2o_socket_t *sock, const char *err)
 {
+    fprintf(stderr, "on_handshake_complete")
+    
     if (err == NULL) {
         if (sock->ssl->ptls != NULL) {
             sock->ssl->record_overhead = ptls_get_record_overhead(sock->ssl->ptls);
@@ -1039,6 +1047,8 @@ static void on_handshake_failure_ossl111(h2o_socket_t *sock, const char *err)
 
 static void proceed_handshake(h2o_socket_t *sock, const char *err)
 {
+    fprintf(stderr, "proceed_handshake")
+    
     h2o_iovec_t first_input = {NULL};
     int ret = 0;
 
@@ -1211,6 +1221,8 @@ Complete:
 void h2o_socket_ssl_handshake(h2o_socket_t *sock, SSL_CTX *ssl_ctx, const char *server_name, h2o_iovec_t alpn_protos,
                               h2o_socket_cb handshake_cb)
 {
+    fprintf(stderr, "h2o_socket_ssl_handshake")
+    
     sock->ssl = h2o_mem_alloc(sizeof(*sock->ssl));
     memset(sock->ssl, 0, offsetof(struct st_h2o_socket_ssl_t, output.pool));
 
@@ -1384,6 +1396,8 @@ int h2o_socket_ssl_is_early_data(h2o_socket_t *sock)
 static int on_alpn_select(SSL *ssl, const unsigned char **out, unsigned char *outlen, const unsigned char *_in, unsigned int inlen,
                           void *_protocols)
 {
+    fprintf(stderr, "on_alpn_select")
+    
     const h2o_iovec_t *protocols = _protocols;
     size_t i;
 
@@ -1405,6 +1419,8 @@ static int on_alpn_select(SSL *ssl, const unsigned char **out, unsigned char *ou
     return SSL_TLSEXT_ERR_NOACK;
 
 Found:
+    fprintf(stderr, "on_alpn_select Found")
+    
     *out = (const unsigned char *)protocols[i].base;
     *outlen = (unsigned char)protocols[i].len;
     return SSL_TLSEXT_ERR_OK;

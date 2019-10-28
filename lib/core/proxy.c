@@ -63,6 +63,7 @@ static h2o_httpclient_ctx_t *get_client_ctx(h2o_req_t *req)
 static h2o_iovec_t rewrite_location(h2o_mem_pool_t *pool, const char *location, size_t location_len, h2o_url_t *match,
                                     const h2o_url_scheme_t *req_scheme, h2o_iovec_t req_authority, h2o_iovec_t req_basepath)
 {
+    fprintf(stderr, "rewrite_location")
     h2o_url_t loc_parsed;
 
     if (h2o_url_parse(location, location_len, &loc_parsed) != 0)
@@ -144,6 +145,7 @@ static void build_request(h2o_req_t *req, h2o_iovec_t *method, h2o_url_t *url, h
                           h2o_httpclient_properties_t *props, int keepalive, int is_websocket_handshake, int use_proxy_protocol,
                           int *reprocess_if_too_early, h2o_url_t *origin)
 {
+    fprintf(stderr, "build_request")
     size_t remote_addr_len = SIZE_MAX;
     char remote_addr[NI_MAXHOST];
     struct sockaddr_storage ss;
@@ -294,6 +296,7 @@ static void build_request(h2o_req_t *req, h2o_iovec_t *method, h2o_url_t *url, h
 
 static h2o_httpclient_t *detach_client(struct rp_generator_t *self)
 {
+    fprintf(stderr, "detach_client")
     h2o_httpclient_t *client = self->client;
     assert(client != NULL);
     client->data = NULL;
@@ -303,6 +306,7 @@ static h2o_httpclient_t *detach_client(struct rp_generator_t *self)
 
 static void do_close(struct rp_generator_t *self)
 {
+    fprintf(stderr, "do_close")
     /**
      * This can be called in the following three scenarios:
      *   1. Downstream timeout before receiving header from upstream
@@ -322,12 +326,14 @@ static void do_close(struct rp_generator_t *self)
 
 static void do_stop(h2o_generator_t *generator, h2o_req_t *req)
 {
+    fprintf(stderr, "do_stop")
     struct rp_generator_t *self = (void *)generator;
     do_close(self);
 }
 
 static void do_send(struct rp_generator_t *self)
 {
+    fprintf(stderr, "do_send")
     h2o_iovec_t vecs[1];
     size_t veccnt;
     h2o_send_state_t ststate;
@@ -445,6 +451,7 @@ static char compress_hint_to_enum(const char *val, size_t len)
 
 static void on_send_headers_timeout(h2o_timer_t *entry)
 {
+    fprintf(stderr, "on_send_headers_timeout")
     struct rp_generator_t *self = H2O_STRUCT_FROM_MEMBER(struct rp_generator_t, send_headers_timeout, entry);
     h2o_doublebuffer_prepare_empty(&self->sending);
     h2o_send(self->src_req, NULL, 0, H2O_SEND_STATE_IN_PROGRESS);
@@ -453,6 +460,7 @@ static void on_send_headers_timeout(h2o_timer_t *entry)
 static h2o_httpclient_body_cb on_head(h2o_httpclient_t *client, const char *errstr, int version, int status, h2o_iovec_t msg,
                                       h2o_header_t *headers, size_t num_headers, int header_requires_dup)
 {
+    fprintf(stderr, "h2o_httpclient_body_cb")
     struct rp_generator_t *self = client->data;
     h2o_req_t *req = self->src_req;
     size_t i;
@@ -583,6 +591,7 @@ static h2o_httpclient_body_cb on_head(h2o_httpclient_t *client, const char *errs
 
 static int on_1xx(h2o_httpclient_t *client, int version, int status, h2o_iovec_t msg, h2o_header_t *headers, size_t num_headers)
 {
+    fprintf(stderr, "on_1xx")
     struct rp_generator_t *self = client->data;
     size_t i;
 
@@ -602,6 +611,7 @@ static int on_1xx(h2o_httpclient_t *client, int version, int status, h2o_iovec_t
 
 static void proceed_request(h2o_httpclient_t *client, size_t written, h2o_send_state_t send_state)
 {
+    fprintf(stderr, "proceed_request")
     struct rp_generator_t *self = client->data;
     if (self == NULL) {
         return;
@@ -615,6 +625,7 @@ static void proceed_request(h2o_httpclient_t *client, size_t written, h2o_send_s
 
 static int write_req(void *ctx, h2o_iovec_t chunk, int is_end_stream)
 {
+    fprintf(stderr, "write_req")
     struct rp_generator_t *self = ctx;
     h2o_httpclient_t *client = self->client;
 
@@ -637,6 +648,7 @@ static h2o_httpclient_head_cb on_connect(h2o_httpclient_t *client, const char *e
                                          h2o_httpclient_proceed_req_cb *proceed_req_cb, h2o_httpclient_properties_t *props,
                                          h2o_url_t *origin)
 {
+    fprintf(stderr, "on_connect")
     struct rp_generator_t *self = client->data;
     h2o_req_t *req = self->src_req;
     int use_proxy_protocol = 0, reprocess_if_too_early = 0;
@@ -713,6 +725,7 @@ static void on_generator_dispose(void *_self)
 
 static struct rp_generator_t *proxy_send_prepare(h2o_req_t *req)
 {
+    fprintf(stderr, "proxy_send_prepare")
     struct rp_generator_t *self = h2o_mem_alloc_shared(&req->pool, sizeof(*self), on_generator_dispose);
     h2o_httpclient_ctx_t *client_ctx = get_client_ctx(req);
 
@@ -738,6 +751,7 @@ static struct rp_generator_t *proxy_send_prepare(h2o_req_t *req)
 
 void h2o__proxy_process_request(h2o_req_t *req)
 {
+    fprintf(stderr, "h2o__proxy_process_request")
     h2o_req_overrides_t *overrides = req->overrides;
     h2o_httpclient_ctx_t *client_ctx = get_client_ctx(req);
     h2o_url_t target_buf, *target = &target_buf;

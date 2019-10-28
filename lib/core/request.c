@@ -218,6 +218,8 @@ static void retain_original_response(h2o_req_t *req)
 
 void h2o_write_error_log(h2o_iovec_t prefix, h2o_iovec_t msg)
 {
+    fprintf(stderr, "h2o_write_error_log")
+    
     /* use writev(2) to emit error atomically */
     struct iovec vecs[] = {{prefix.base, prefix.len}, {msg.base, msg.len}, {"\n", 1}};
     H2O_BUILD_ASSERT(sizeof(vecs) / sizeof(vecs[0]) <= IOV_MAX);
@@ -239,6 +241,8 @@ static void on_default_error_callback(void *data, h2o_iovec_t prefix, h2o_iovec_
 
 void h2o_init_request(h2o_req_t *req, h2o_conn_t *conn, h2o_req_t *src)
 {
+    fprintf(stderr, "h2o_init_request")
+    
     /* clear all memory (expect memory pool, since it is large) */
     memset(req, 0, offsetof(h2o_req_t, pool));
 
@@ -592,6 +596,8 @@ void h2o_ostream_send_next(h2o_ostream_t *ostream, h2o_req_t *req, h2o_sendvec_t
 
 void h2o_req_fill_mime_attributes(h2o_req_t *req)
 {
+    fprintf(stderr, "h2o_req_fill_mime_attributes")
+    
     ssize_t content_type_index;
     h2o_mimemap_type_t *mime;
 
@@ -608,6 +614,8 @@ void h2o_req_fill_mime_attributes(h2o_req_t *req)
 
 void h2o_send_inline(h2o_req_t *req, const char *body, size_t len)
 {
+    fprintf(stderr, "h2o_send_inline")
+    
     static h2o_generator_t generator = {NULL, NULL};
 
     h2o_iovec_t buf = h2o_strdup(&req->pool, body, len);
@@ -624,6 +632,8 @@ void h2o_send_inline(h2o_req_t *req, const char *body, size_t len)
 
 void h2o_send_error_generic(h2o_req_t *req, int status, const char *reason, const char *body, int flags)
 {
+    fprintf(stderr, "h2o_send_error_generic")
+    
     if (req->pathconf == NULL) {
         h2o_hostconf_t *hostconf = h2o_req_setup(req);
         h2o_req_bind_conf(req, hostconf, &hostconf->fallback_path);
@@ -667,6 +677,8 @@ DECL_SEND_ERROR_DEFERRED(502)
 
 void h2o_req_log_error(h2o_req_t *req, const char *module, const char *fmt, ...)
 {
+    fprintf(stderr, "h2o_req_log_error")
+    
 #define INITIAL_BUF_SIZE 256
 
     char *errbuf = h2o_mem_alloc_pool(&req->pool, char, INITIAL_BUF_SIZE);
@@ -708,6 +720,8 @@ void h2o_req_log_error(h2o_req_t *req, const char *module, const char *fmt, ...)
 
 void h2o_send_redirect(h2o_req_t *req, int status, const char *reason, const char *url, size_t url_len)
 {
+    fprintf(stderr, "h2o_send_redirect")
+
     if (req->res_is_delegated) {
         h2o_iovec_t method = h2o_get_redirect_method(req->method, status);
         h2o_send_redirect_internal(req, method, url, url_len, 0);
@@ -742,6 +756,7 @@ void h2o_send_redirect(h2o_req_t *req, int status, const char *reason, const cha
 
 void h2o_send_redirect_internal(h2o_req_t *req, h2o_iovec_t method, const char *url_str, size_t url_len, int preserve_overrides)
 {
+    fprintf(stderr, "h2o_send_redirect_internal")
     h2o_url_t url;
 
     /* parse the location URL */
@@ -808,6 +823,8 @@ void h2o_resp_add_date_header(h2o_req_t *req)
 
 void h2o_send_informational(h2o_req_t *req)
 {
+    fprintf(stderr, "h2o_send_informational")
+
     /* 1xx must be sent before h2o_start_response is called*/
     assert(req->_generator == NULL);
     assert(req->_ostr_top->next == NULL);
